@@ -7,18 +7,18 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 public class LocationOpenHelper extends SQLiteOpenHelper {
-    private static final String SQLITE_DATABASE_NAME = "cordova_bg_locations";
+    public static final String SQLITE_DATABASE_NAME = "cordova_bg_locations";
     private static final int DATABASE_VERSION = 1;
     public static final String LOCATION_TABLE_NAME = "location";
-    private static final String LOCATION_TABLE_COLUMNS = 
+    public static final String LOCATION_TABLE_COLUMNS = 
         " id INTEGER PRIMARY KEY AUTOINCREMENT," +
         " recordedAt TEXT," +
         " accuracy TEXT," +
         " speed TEXT," +
         " latitude TEXT," +
         " longitude TEXT";
-    private static final String LOCATION_TABLE_CREATE =
-        "CREATE TABLE " + LOCATION_TABLE_NAME + " (" +
+    public static final String LOCATION_TABLE_CREATE =
+        "CREATE TABLE IF NOT EXISTS " + LOCATION_TABLE_NAME + " (" +
         LOCATION_TABLE_COLUMNS +
         ");";
 

@@ -12,6 +12,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import java.io.File;
+
 import com.tenforwardconsulting.cordova.bgloc.data.Location;
 import com.tenforwardconsulting.cordova.bgloc.data.LocationDAO;
 
@@ -24,12 +26,26 @@ public class SQLiteLocationDAO implements LocationDAO {
 		this.context = context;
 	}
 	
+	private SQLiteDatabase openDatabase(String dbname, String password)
+	{
+		File dbfile = this.context.getDatabasePath(dbname + ".db");
+
+		if (!dbfile.exists()) {
+		    dbfile.getParentFile().mkdirs();
+		}
+		Log.i("SQLiteLocationDAO", "Open sqlite db: " + dbfile.getAbsolutePath());
+		SQLiteDatabase mydb = SQLiteDatabase.openOrCreateDatabase(dbfile, null);
+		mydb.execSQL(LocationOpenHelper.LOCATION_TABLE_CREATE);
+		return mydb;
+	}
+	
 	public Location[] getAllLocations() {
 		SQLiteDatabase db = null;
 		Cursor c = null;
 		List<Location> all = new ArrayList<Location>();
 		try {
-			db = new LocationOpenHelper(context).getReadableDatabase();
+			//db = new LocationOpenHelper(context).getReadableDatabase();
+			db = this.openDatabase(LocationOpenHelper.SQLITE_DATABASE_NAME, "");
 			c = db.query(LocationOpenHelper.LOCATION_TABLE_NAME, null, null, null, null, null, null);
 			while (c.moveToNext()) {
 				all.add(hydrate(c));
@@ -46,11 +62,12 @@ public class SQLiteLocationDAO implements LocationDAO {
 	}
 
 	public boolean persistLocation(Location location) {
-		SQLiteDatabase db = new LocationOpenHelper(context).getWritableDatabase();
+		//SQLiteDatabase db = new LocationOpenHelper(context).getWritableDatabase();
+		SQLiteDatabase db = this.openDatabase(LocationOpenHelper.SQLITE_DATABASE_NAME, "");
 		db.beginTransaction();
 		ContentValues values = getContentValues(location);
 		long rowId = db.insert(LocationOpenHelper.LOCATION_TABLE_NAME, null, values);
-		Log.d(TAG, "After insert, rowId = " + rowId);
+		Log.d("LocationUpdateService", "After insert, rowId = " + rowId);
 		db.setTransactionSuccessful();
 		db.endTransaction();
 		db.close();
@@ -64,7 +81,8 @@ public class SQLiteLocationDAO implements LocationDAO {
 	}
 	
 	public void deleteLocation(Location location) {
-		SQLiteDatabase db = new LocationOpenHelper(context).getWritableDatabase();
+		//SQLiteDatabase db = new LocationOpenHelper(context).getWritableDatabase();
+		SQLiteDatabase db = this.openDatabase(LocationOpenHelper.SQLITE_DATABASE_NAME, "");
 		db.beginTransaction();
 		db.delete(LocationOpenHelper.LOCATION_TABLE_NAME, "id = ?", new String[]{location.getId().toString()});
 		db.setTransactionSuccessful();
