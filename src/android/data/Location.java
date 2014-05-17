@@ -3,7 +3,8 @@ package com.tenforwardconsulting.cordova.bgloc.data;
 import java.util.Date;
 
 import android.os.SystemClock;
-
+import org.json.JSONObject;
+import org.json.JSONException;
 
 public class Location {
 	private String latitude;
@@ -49,6 +50,22 @@ public class Location {
 	}
 	public void setSpeed(String speed) {
 		this.speed = speed;
+	}
+	
+	public JSONObject getJSONObject() {
+		try {
+			JSONObject j = new JSONObject();
+			j.put("id", this.id);		
+			j.put("latitude", this.latitude);
+			j.put("longitude", this.longitude);
+			j.put("recordedAt", this.recordedAt);
+			j.put("accuracy", this.accuracy);
+			j.put("speed", this.speed); 
+			return j;
+		} catch(JSONException ex) {
+			ex.printStackTrace();
+		}
+		return null;		
 	}
 	
 	public static Location fromAndroidLocation(android.location.Location originalLocation) {

@@ -43,6 +43,13 @@ module.exports = {
             'onPaceChange',
             [isMoving]);   
     },
+    getPoint: function(success, failure) {
+        exec(success || function() {},
+            failure || function() {},
+            'BackgroundGeoLocation',
+            'getPoint',
+            []);   
+    },
     /**
     * @param {Integer} stationaryRadius
     * @param {Integer} desiredAccuracy

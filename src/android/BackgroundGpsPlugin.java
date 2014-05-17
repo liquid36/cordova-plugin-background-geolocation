@@ -3,6 +3,7 @@ package com.tenforwardconsulting.cordova.bgloc;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.json.JSONException;
 
 import android.app.Activity;
@@ -11,13 +12,17 @@ import android.content.Intent;
 import android.location.LocationManager;
 import android.util.Log;
 
+import com.tenforwardconsulting.cordova.bgloc.data.DAOFactory;
+import com.tenforwardconsulting.cordova.bgloc.data.LocationDAO;
+
 public class BackgroundGpsPlugin extends CordovaPlugin {
     private static final String TAG = "BackgroundGpsPlugin";
 
-    public static final String ACTION_START = "start";
-    public static final String ACTION_STOP = "stop";
-    public static final String ACTION_CONFIGURE = "configure";
-    public static final String ACTION_SET_CONFIG = "setConfig";
+    public static final String ACTION_START 		= "start";
+    public static final String ACTION_STOP 			= "stop";
+    public static final String ACTION_CONFIGURE 	= "configure";
+    public static final String ACTION_SET_CONFIG 	= "setConfig";
+    public static final String ACTION_GET_POINT		= "getPoint";
 
     private Intent updateServiceIntent;
     
@@ -35,7 +40,6 @@ public class BackgroundGpsPlugin extends CordovaPlugin {
         Activity activity = this.cordova.getActivity();
         Boolean result = false;
         updateServiceIntent = new Intent(activity, LocationUpdateService.class);
-        
         if (ACTION_START.equalsIgnoreCase(action) && !isEnabled) {
             result = true;
             if (params == null || url == null) {
@@ -78,7 +82,15 @@ public class BackgroundGpsPlugin extends CordovaPlugin {
             result = true;
             // TODO reconfigure Service
             callbackContext.success();
-        }
+        } else if (ACTION_GET_POINT.equalsIgnoreCase(action)) {
+			JSONArray j = new JSONArray ();
+			LocationDAO locationDAO = DAOFactory.createLocationDAO(activity.getApplicationContext());
+			for (com.tenforwardconsulting.cordova.bgloc.data.Location savedLocation : locationDAO.getAllLocations()) {
+				j.put(savedLocation.getJSONObject());
+			}		
+			callbackContext.success(j);
+			result = true;
+		}
 
         return result;
     }
