@@ -188,7 +188,7 @@ public class LocationUpdateService extends Service implements LocationListener {
 				builder.setContentIntent(pendingIntent);
 				notification = buildForegroundNotification(builder);
             } else {
-				NotificationCompat.Builder builder = new Notification.Builder(this);
+				NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 				builder.setContentTitle("Background tracking");
 				builder.setContentText("ENABLED");
 				builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
@@ -749,7 +749,8 @@ public class LocationUpdateService extends Service implements LocationListener {
             for (com.tenforwardconsulting.cordova.bgloc.data.Location savedLocation : locationDAO.getAllLocations()) {
                 Log.d(TAG, "Posting saved location");
                 if (postLocation(savedLocation)) {
-                    locationDAO.deleteLocation(savedLocation);
+					Log.d(TAG, "Here should delete position");
+                    //locationDAO.deleteLocation(savedLocation);
                 }
             }
             return true;
