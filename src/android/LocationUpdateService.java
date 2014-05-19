@@ -13,6 +13,7 @@ import com.tenforwardconsulting.cordova.bgloc.data.DAOFactory;
 import com.tenforwardconsulting.cordova.bgloc.data.LocationDAO;
 
 import android.annotation.TargetApi;
+import 	android.net.Uri;
 
 import android.media.AudioManager;
 import android.media.ToneGenerator;
@@ -21,6 +22,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import static android.telephony.PhoneStateListener.*;
 import android.telephony.CellLocation;
+import android.media.RingtoneManager;
 
 import android.app.AlarmManager;
 import android.app.NotificationManager;
@@ -348,6 +350,8 @@ public class LocationUpdateService extends Service implements LocationListener {
             setPace(false);
         }
         
+        makeNotification();
+        
         if (isDebugging) {
             Toast.makeText(this, "mv:"+isMoving+",acy:"+location.getAccuracy()+",v:"+location.getSpeed()+",df:"+scaledDistanceFilter, Toast.LENGTH_LONG).show();
         }
@@ -407,6 +411,7 @@ public class LocationUpdateService extends Service implements LocationListener {
         // Go ahead and cache, push to server
         lastLocation = location;
         persistLocation(location);
+                
 
         if (this.isNetworkConnected()) {
             Log.d(TAG, "Scheduling location network post");
@@ -439,6 +444,25 @@ public class LocationUpdateService extends Service implements LocationListener {
         }
         toneGenerator.startTone(tone, duration);
     }
+    
+    public void makeNotification() 
+    {
+		Intent main = new Intent(this, BackgroundGpsPlugin.class);
+        main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
+            
+		NotificationManager notificationManager = (NotificationManager) this.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+		Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.getApplicationContext());
+		mBuilder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
+		mBuilder.setContentTitle("Llegando a destino");
+		mBuilder.setContentText("Estamos llegado a la casa de la abuela dora");
+		mBuilder.setSound(soundUri); 
+		mBuilder.setContentIntent(pendingIntent);
+		Notification n = mBuilder.getNotification();
+		Log.d(TAG, "Noti 5");
+		notificationManager.notify(10, n);
+	}
     
     public void resetStationaryAlarm() {
         alarmManager.cancel(stationaryAlarmPI);
