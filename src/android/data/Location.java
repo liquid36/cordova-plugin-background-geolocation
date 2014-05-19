@@ -1,6 +1,7 @@
 package com.tenforwardconsulting.cordova.bgloc.data;
 
 import java.util.Date;
+import java.lang.Math;
 
 import android.os.SystemClock;
 import org.json.JSONObject;
@@ -50,6 +51,19 @@ public class Location {
 	}
 	public void setSpeed(String speed) {
 		this.speed = speed;
+	}
+	
+	// Distancia en metros hasta otro punto
+	public double distanceFrom(Location d)
+	{
+		double R = 6378.137; 
+		double deg2radMultiplier = Math.PI / 180; 
+		double lat1 = Double.parseDouble(this.latitude) * deg2radMultiplier;
+		double lon1 = Double.parseDouble(this.longitude) * deg2radMultiplier;
+		double lat2 = Double.parseDouble(d.latitude) * deg2radMultiplier;
+		double lon2 = Double.parseDouble(d.longitude) * deg2radMultiplier;
+		double dlon = lon2 - lon1;
+		return (Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(dlon)) * R) * 1000;
 	}
 	
 	public JSONObject getJSONObject() {
