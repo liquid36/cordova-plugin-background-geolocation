@@ -350,7 +350,7 @@ public class LocationUpdateService extends Service implements LocationListener {
             setPace(false);
         }
         
-        makeNotification();
+        //makeNotification();
         
         if (isDebugging) {
             Toast.makeText(this, "mv:"+isMoving+",acy:"+location.getAccuracy()+",v:"+location.getSpeed()+",df:"+scaledDistanceFilter, Toast.LENGTH_LONG).show();
@@ -447,7 +447,7 @@ public class LocationUpdateService extends Service implements LocationListener {
     
     public void makeNotification() 
     {
-		Intent main = new Intent(this, BackgroundGpsPlugin.class);
+		Intent main = new Intent(this, org.apache.cordova.CordovaActivity.class);
         main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
             
