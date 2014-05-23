@@ -13,7 +13,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.io.File;
-
+import com.tenforwardconsulting.cordova.bgloc.data.Alarm;
 import com.tenforwardconsulting.cordova.bgloc.data.Location;
 import com.tenforwardconsulting.cordova.bgloc.data.LocationDAO;
 
@@ -36,8 +36,31 @@ public class SQLiteLocationDAO implements LocationDAO {
 		Log.i("SQLiteLocationDAO", "Open sqlite db: " + dbfile.getAbsolutePath());
 		SQLiteDatabase mydb = SQLiteDatabase.openOrCreateDatabase(dbfile, null);
 		mydb.execSQL(LocationOpenHelper.LOCATION_TABLE_CREATE);
+		mydb.execSQL(LocationOpenHelper.ALARM_TABLE_CREATE);
 		return mydb;
 	}
+	
+	public Alarm[] getActiveAlarm() {
+		SQLiteDatabase db = null;
+		Cursor c = null;
+		List<Alarm> all = new ArrayList<Alarm>();
+		try {
+			db = this.openDatabase(LocationOpenHelper.SQLITE_DATABASE_NAME, "");
+			c = db.rawQuery("SELECT * FROM "+ LocationOpenHelper.ALARM_TABLE_NAME + " WHERE active > 0",new String[] {});
+			while (c.moveToNext()) {
+				all.add(hydrateA(c));
+			}
+		} finally {
+			if (c != null) {
+				c.close();
+			}
+			if (db != null) {
+				db.close();
+			}
+		}
+		return all.toArray(new Alarm[all.size()]);
+	}
+	
 	
 	public Location[] getAllLocations() {
 		SQLiteDatabase db = null;
@@ -88,6 +111,19 @@ public class SQLiteLocationDAO implements LocationDAO {
 		db.setTransactionSuccessful();
 		db.endTransaction();
 		db.close();
+	}
+	
+	
+	private Alarm hydrateA(Cursor c) {
+		Alarm l = new Alarm();
+		l.setId(c.getLong(c.getColumnIndex("id")));
+		l.setName(c.getString(c.getColumnIndex("name")));
+		l.setPath(c.getString(c.getColumnIndex("path")));
+		l.setLatitude(c.getString(c.getColumnIndex("latitude")));
+		l.setLongitude(c.getString(c.getColumnIndex("longitude")));
+		l.setMetros(c.getInt(c.getColumnIndex("metros")));
+		l.setActive(c.getInt(c.getColumnIndex("active")));
+		return l;
 	}
 	
 	private Location hydrate(Cursor c) {
