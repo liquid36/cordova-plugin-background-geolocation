@@ -1,6 +1,7 @@
 package com.tenforwardconsulting.cordova.bgloc;
 
 import java.util.List;
+import java.io.File;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -344,13 +345,12 @@ public class LocationUpdateService extends Service implements LocationListener {
     }
 
     public void onLocationChanged(Location location) {
+		
         Log.d(TAG, "- onLocationChanged: " + location.getLatitude() + "," + location.getLongitude() + ", accuracy: " + location.getAccuracy() + ", isMoving: " + isMoving + ", speed: " + location.getSpeed());
         if (!isMoving && !isAcquiringStationaryLocation && stationaryLocation==null) {
             // Perhaps our GPS signal was interupted, re-acquire a stationaryLocation now.
             setPace(false);
         }
-        
-        //makeNotification();
         
         if (isDebugging) {
             Toast.makeText(this, "mv:"+isMoving+",acy:"+location.getAccuracy()+",v:"+location.getSpeed()+",df:"+scaledDistanceFilter, Toast.LENGTH_LONG).show();
@@ -410,22 +410,21 @@ public class LocationUpdateService extends Service implements LocationListener {
         }
         // Go ahead and cache, push to server
         lastLocation = location;
-        persistLocation(location);
-                
+        persistLocation(location); 
 
-        if (this.isNetworkConnected()) {
+        /*if (this.isNetworkConnected()) {
             Log.d(TAG, "Scheduling location network post");
             schedulePostLocations();
         } else {
             Log.d(TAG, "Network unavailable, waiting for now");
-        }
+        }*/
     }
     
     /**
      * Plays debug sound
      * @param name
      */
-    private void startTone(String name) {
+	private void startTone(String name) {
         int tone = 0;
         int duration = 1000;
         
@@ -443,26 +442,7 @@ public class LocationUpdateService extends Service implements LocationListener {
             tone = ToneGenerator.TONE_SUP_RINGTONE;
         }
         toneGenerator.startTone(tone, duration);
-    }
-    
-    public void makeNotification() 
-    {
-		Intent main = new Intent(this, org.apache.cordova.CordovaActivity.class);
-        main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
-            
-		NotificationManager notificationManager = (NotificationManager) this.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-		Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.getApplicationContext());
-		mBuilder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
-		mBuilder.setContentTitle("Llegando a destino");
-		mBuilder.setContentText("Estamos llegado a la casa de la abuela dora");
-		mBuilder.setSound(soundUri); 
-		mBuilder.setContentIntent(pendingIntent);
-		Notification n = mBuilder.getNotification();
-		Log.d(TAG, "Noti 5");
-		notificationManager.notify(10, n);
-	}
+    } 
     
     public void resetStationaryAlarm() {
         alarmManager.cancel(stationaryAlarmPI);
@@ -715,7 +695,44 @@ public class LocationUpdateService extends Service implements LocationListener {
         } else {
             Log.w(TAG, "Failed to persist location");
         }
+        verifiedAlarm(savedLocation);
     }
+
+	public void verifiedAlarm(com.tenforwardconsulting.cordova.bgloc.data.Location l) 
+    {
+		Log.d(TAG,"Checking alarms");
+		LocationDAO locationDAO = DAOFactory.createLocationDAO(LocationUpdateService.this.getApplicationContext());
+        for (com.tenforwardconsulting.cordova.bgloc.data.Alarm alarm : locationDAO.getActiveAlarm()) {
+			Log.d(TAG,"Checking " + alarm.getName() + "-> " + Integer.toString(alarm.getMetros())  +  "   Distance: " + Long.toString(l.distanceFrom(alarm.getLatitude(),alarm.getLongitude())));
+			if ( l.distanceFrom(alarm.getLatitude(),alarm.getLongitude()) < alarm.getMetros() )
+				makeNotification(alarm.getName(), alarm.getPath());
+		}
+		
+	}
+    
+    public void makeNotification(String name,String path) 
+    {
+		Intent main = new Intent(this, org.apache.cordova.CordovaActivity.class);
+        main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
+            
+		NotificationManager notificationManager = (NotificationManager) this.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+		
+		//File ringFile = new File("/sdcard/Music/Sumo/Kayak.mp3");
+		Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		//Uri soundUri = Uri.fromFile(ringFile);
+		
+		Log.d(TAG,"Ringtong URI " + soundUri.toString());
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.getApplicationContext());
+		mBuilder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
+		mBuilder.setContentTitle("Llegando a " + name);
+		mBuilder.setContentText("Acercandonos a la casa........");
+		mBuilder.setSound(soundUri); 
+		mBuilder.setContentIntent(pendingIntent);
+		Notification n = mBuilder.getNotification();
+		notificationManager.notify(10, n);
+	}
+    
 
     private boolean isNetworkConnected() {
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();

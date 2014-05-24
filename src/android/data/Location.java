@@ -54,7 +54,7 @@ public class Location {
 	}
 	
 	// Distancia en metros hasta otro punto
-	public double distanceFrom(String lat, String lon)
+	public long distanceFrom(String lat, String lon)
 	{
 		double R = 6378.137; 
 		double deg2radMultiplier = Math.PI / 180; 
@@ -63,7 +63,7 @@ public class Location {
 		double lat2 = Double.parseDouble(lat) * deg2radMultiplier;
 		double lon2 = Double.parseDouble(lon) * deg2radMultiplier;
 		double dlon = lon2 - lon1;
-		return (Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(dlon)) * R) * 1000;
+		return  Math.round((Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(dlon)) * R) * 1000);
 	}
 	
 	public JSONObject getJSONObject() {
