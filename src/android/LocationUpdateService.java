@@ -185,15 +185,15 @@ public class LocationUpdateService extends Service implements LocationListener {
 			Notification notification;
             if (android.os.Build.VERSION.SDK_INT >= 11) {
 				Notification.Builder builder = new Notification.Builder(this);
-				builder.setContentTitle("Background tracking");
-				builder.setContentText("ENABLED");
+				builder.setContentTitle("TreAviso ");
+				builder.setContentText("Background tracking");
 				builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
 				builder.setContentIntent(pendingIntent);
 				notification = buildForegroundNotification(builder);
             } else {
 				NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-				builder.setContentTitle("Background tracking");
-				builder.setContentText("ENABLED");
+				builder.setContentTitle("TreAviso");
+				builder.setContentText("Background tracking");
 				builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
 				builder.setContentIntent(pendingIntent);
 				notification = buildForegroundNotificationCompat(builder);
@@ -715,18 +715,21 @@ public class LocationUpdateService extends Service implements LocationListener {
 		Intent main = new Intent(this, org.apache.cordova.CordovaActivity.class);
         main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
-            
+        Uri soundUri;    
 		NotificationManager notificationManager = (NotificationManager) this.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 		
-		//File ringFile = new File("/sdcard/Music/Sumo/Kayak.mp3");
-		Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		//Uri soundUri = Uri.fromFile(ringFile);
+		if (path == "")
+			soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		else {	
+			File ringFile = new File(path);
+			soundUri = Uri.fromFile(ringFile);
+		}	
 		
 		Log.d(TAG,"Ringtong URI " + soundUri.toString());
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.getApplicationContext());
 		mBuilder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
 		mBuilder.setContentTitle("Llegando a " + name);
-		mBuilder.setContentText("Acercandonos a la casa........");
+		mBuilder.setContentText("");
 		mBuilder.setSound(soundUri); 
 		mBuilder.setContentIntent(pendingIntent);
 		Notification n = mBuilder.getNotification();
